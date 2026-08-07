@@ -1,2 +1,7 @@
 import { PrismaClient } from "@prisma/client";
-export default new PrismaClient();
+import { PrismaPg } from "@prisma/adapter-pg";
+
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL as string,
+});
+export default new PrismaClient({ adapter });
