@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/prisma-client"
 }
 
 datasource db {
@@ -39,9 +40,13 @@ model Order {
   id String @id @default(uuid())
   userId String
   user User @relation(fields: [userId], references: [id])
+  quantity Int
+  totalPrice Float
+  createdAt DateTime @default(now())
 
   @@map("orders")
 }
+
 
 
 
