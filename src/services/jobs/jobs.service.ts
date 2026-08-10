@@ -67,6 +67,31 @@ export const listJobs = async (query: Record<string, unknown>) => {
   return { data, meta: buildMeta(page, limit, total) };
 };
 
+export const listMyJobs = async (userId: string, role: string, companyId?: string) => {
+  const where: Prisma.JobWhereInput = { isDeleted: false };
+
+  if (role === "ADMIN") {
+    if (companyId) where.companyId = companyId;
+  } else {
+    const company = await prisma.company.findFirst({
+      where: { ownerId: userId, isDeleted: false },
+    });
+    if (company) where.companyId = company.id;
+    else return { data: [], meta: buildMeta(1, 10, 0) };
+  }
+
+  const [data, total] = await Promise.all([
+    prisma.job.findMany({
+      where,
+      include: jobInclude,
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.job.count({ where }),
+  ]);
+
+  return { data, meta: buildMeta(1, 10, total) };
+};
+
 export const getJobById = async (id: string) => {
   const job = await prisma.job.findUnique({ where: { id }, include: jobInclude });
   if (!job || job.isDeleted) {

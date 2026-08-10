@@ -12,6 +12,17 @@ export const applyToJob = asyncHandler(async (req: Request, res: Response) => {
   sendResponse(res, 201, "Application submitted successfully", application);
 });
 
+export const listApplications = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    throw new AppError("Authentication required", 401);
+  }
+  const { data, meta } = await applicationsService.listApplications(req.query, {
+    id: req.user.id,
+    role: req.user.role,
+  });
+  sendResponse(res, 200, "Applications retrieved successfully", data, meta);
+});
+
 export const getMyApplications = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user) {
     throw new AppError("Authentication required", 401);

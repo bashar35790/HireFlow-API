@@ -10,6 +10,16 @@ export const getJobs = asyncHandler(async (req: Request, res: Response) => {
   sendResponse(res, 200, "Jobs retrieved successfully", data, meta);
 });
 
+export const getMyJobs = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    throw new AppError("Authentication required", 401);
+  }
+  const companyId =
+    typeof req.query.companyId === "string" ? req.query.companyId : undefined;
+  const { data, meta } = await jobsService.listMyJobs(req.user.id, req.user.role, companyId);
+  sendResponse(res, 200, "Jobs retrieved successfully", data, meta);
+});
+
 export const getJob = asyncHandler(async (req: Request, res: Response) => {
   const job = await jobsService.getJobById(req.params.id as string);
 

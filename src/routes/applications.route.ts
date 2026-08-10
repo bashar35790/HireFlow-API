@@ -5,6 +5,7 @@ import { requireRole } from "../middleware/role.middleware";
 import { validate } from "../middleware/validate.middleware";
 import {
   applyToJob,
+  listApplications,
   getMyApplications,
   getApplication,
   getApplicationStatus,
@@ -25,6 +26,7 @@ router.post(
   validate(createApplicationSchema),
   applyToJob
 );
+router.get("/", authMiddleware, requireRole(UserRole.ADMIN, UserRole.EMPLOYER), listApplications);
 router.get("/my", authMiddleware, requireRole(UserRole.JOB_SEEKER), getMyApplications);
 router.get("/:id/status", authMiddleware, getApplicationStatus);
 router.get("/:id", authMiddleware, getApplication);

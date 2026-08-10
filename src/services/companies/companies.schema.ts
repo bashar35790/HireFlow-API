@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CompanyStatus } from "../../generated/prisma-client";
 
 export const createCompanySchema = z
   .object({
@@ -17,6 +18,11 @@ export const updateCompanySchema = z
     logo: z.string().max(500).optional(),
     website: z.string().max(500).optional(),
     location: z.string().min(2).max(200).optional(),
+    status: z
+      .enum([CompanyStatus.PENDING, CompanyStatus.APPROVED, CompanyStatus.REJECTED], {
+        error: "Invalid company status",
+      })
+      .optional(),
   })
   .strict();
 

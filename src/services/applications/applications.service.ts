@@ -62,6 +62,46 @@ export const listMyApplications = async (userId: string, query: Record<string, u
   return { data, meta: buildMeta(page, limit, total) };
 };
 
+export const listApplications = async (
+  query: Record<string, unknown>,
+  user?: { id: string; role: string }
+) => {
+  const { page, limit, skip } = parsePagination(query);
+  const where: Prisma.ApplicationWhereInput = { isDeleted: false };
+
+  if (query.jobId) {
+    where.jobId = String(query.jobId);
+    if (user && user.role !== "ADMIN") {
+      const job = await prisma.job.findUnique({
+        where: { id: where.jobId },
+        include: { company: true },
+      });
+      if (!job || job.company.ownerId !== user.id) {
+        throw new AppError("Forbidden: insufficient permissions", 403);
+      }
+    }
+  } else if (user && user.role !== "ADMIN") {
+    throw new AppError("Forbidden: insufficient permissions", 403);
+  }
+
+  if (query.status) {
+    where.status = String(query.status) as ApplicationStatus;
+  }
+
+  const [data, total] = await Promise.all([
+    prisma.application.findMany({
+      where,
+      include: applicationInclude,
+      skip,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.application.count({ where }),
+  ]);
+
+  return { data, meta: buildMeta(page, limit, total) };
+};
+
 export const getApplicationById = async (id: string) => {
   const application = await prisma.application.findUnique({
     where: { id },
