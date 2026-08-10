@@ -40,3 +40,35 @@ export const authMiddleware = async (
     next(new AppError("Invalid or expired token", 401));
   }
 };
+
+export const optionalAuth = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const token = req.cookies?.[COOKIE_NAME];
+  if (!token) {
+    next();
+    return;
+  }
+
+  try {
+    const payload = jwt.verify(token, env.jwtSecret) as { id: string };
+    const user = await prisma.user.findUnique({ where: { id: payload.id } });
+
+    if (!user || user.isDeleted || user.status !== "ACTIVE") {
+      next();
+      return;
+    }
+
+    req.user = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    };
+    next();
+  } catch {
+    next();
+  }
+};
