@@ -7,46 +7,181 @@ datasource db {
   provider = "postgresql"
 }
 
-model User{
-  id String @id @default(uuid())
-  name String
-  email String @unique
-  password String
-  role UserRole @default(User)
-  orders Order[]
+enum UserRole {
+  JOB_SEEKER
+  EMPLOYER
+  ADMIN
+}
 
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+enum CompanyStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CategoryStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWING
+  SHORTLISTED
+  REJECTED
+  ACCEPTED
+}
+
+enum ReviewStatus {
+  ACTIVE
+  HIDDEN
+}
+
+model User {
+  id        String     @id @default(uuid())
+  name      String
+  email     String     @unique
+  password  String
+  role      UserRole   @default(JOB_SEEKER)
+  status    UserStatus @default(ACTIVE)
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  companies   Company[]     @relation("CompanyOwner")
+  applications Application[]
+  savedJobs    SavedJob[]
+  reviews      Review[]
+
+  @@index([role])
   @@map("users")
 }
 
-enum UserRole {
-  User
-  Admin
-  Manager
+model Company {
+  id          String        @id @default(uuid())
+  name        String
+  description String?
+  logo        String?
+  website     String?
+  location    String
+  status      CompanyStatus @default(PENDING)
+  ownerId     String
+  owner       User          @relation("CompanyOwner", fields: [ownerId], references: [id])
+  isDeleted   Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  jobs    Job[]
+  reviews Review[]
+
+  @@index([status])
+  @@index([ownerId])
+  @@map("companies")
 }
 
-model Product {
-  id String @id @default(uuid())
-  name String
+model Category {
+  id          String         @id @default(uuid())
+  name        String         @unique
+  slug        String         @unique
   description String?
-  price Float
-  stock Int @map("Stock")
+  status      CategoryStatus @default(ACTIVE)
+  isDeleted   Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  jobs Job[]
+
+  @@map("categories")
+}
+
+model Job {
+  id              String    @id @default(uuid())
+  title           String
+  description     String
+  salaryMin       Float?
+  salaryMax       Float?
+  location        String
+  jobType         String
+  experienceLevel String?
+  companyId       String
+  company         Company   @relation(fields: [companyId], references: [id])
+  categoryId      String
+  category        Category  @relation(fields: [categoryId], references: [id])
+  status          JobStatus @default(DRAFT)
+  isDeleted       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  applications Application[]
+  savedJobs    SavedJob[]
+
+  @@index([companyId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([location])
+  @@map("jobs")
+}
+
+model Application {
+  id          String            @id @default(uuid())
+  userId      String
+  user        User              @relation(fields: [userId], references: [id])
+  jobId       String
+  job         Job               @relation(fields: [jobId], references: [id])
+  resume      String?
+  coverLetter String?
+  status      ApplicationStatus @default(PENDING)
+  isDeleted   Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([userId, jobId])
+  @@index([jobId])
+  @@index([status])
+  @@map("applications")
+}
+
+model Review {
+  id        String       @id @default(uuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+  companyId String
+  company   Company      @relation(fields: [companyId], references: [id])
+  rating    Int
+  comment   String?
+  status    ReviewStatus @default(ACTIVE)
+  isDeleted Boolean      @default(false)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@unique([userId, companyId])
+  @@index([companyId])
+  @@map("reviews")
+}
+
+model SavedJob {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id])
+  isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("products")
+  @@unique([userId, jobId])
+  @@index([jobId])
+  @@map("saved_jobs")
 }
-
-model Order {
-  id String @id @default(uuid())
-  userId String
-  user User @relation(fields: [userId], references: [id])
-  quantity Int
-  totalPrice Float
-  createdAt DateTime @default(now())
-
-  @@map("orders")
-}
-
-
-
-
