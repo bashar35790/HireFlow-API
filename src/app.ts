@@ -1,18 +1,25 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
+import { corsOptions } from "./config/cors";
 import router from "./routes";
-dotenv.config();
+import { errorHandler, notFoundHandler } from "./middleware/error.middleware";
 
-const app=express();
-app.use(cors());
-app.use(express.json({ type: () => true }));
+const app = express();
+
+app.use(cors(corsOptions));
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/api/v1", router);
-app.get("/",(req,res)=>{
-    res.json({
-        success:true,
-        message:"Server is running"
-    })
+
+app.get("/", (_req, res) => {
+  res.json({
+    success: true,
+    message: "Server is running",
+  });
 });
+
+app.use("/api/v1", router);
+
+app.use(notFoundHandler);
+app.use(errorHandler);
+
 export default app;
