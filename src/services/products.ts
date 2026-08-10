@@ -6,7 +6,6 @@ const router = Router();
 // for post new product 
 router.post("/", async (req: Request, res: Response) => {
   const body = req.body;
-  console.log("Received product data:", body); // Log the received product data
   try {
     const data = await prisma.product.create({
       data: {
