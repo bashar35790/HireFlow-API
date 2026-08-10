@@ -10,6 +10,10 @@ import reviews from "./reviews.route";
 
 const router = Router();
 
+router.get("/", (req, res) => {
+  res.json({ success: true, message: "Welcome to HireFlow API v1" });
+});
+
 router.use("/auth", auth);
 router.use("/users", users);
 router.use("/categories", categories);
