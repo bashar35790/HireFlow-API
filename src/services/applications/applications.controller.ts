@@ -46,6 +46,14 @@ export const getApplication = asyncHandler(async (req: Request, res: Response) =
 
 export const getApplicationStatus = asyncHandler(async (req: Request, res: Response) => {
   const application = await applicationsService.getApplicationById(req.params.id as string);
+
+  const isAdmin = req.user?.role === "ADMIN";
+  const isOwner = application.userId === req.user?.id;
+  const isJobOwner = application.job.company.ownerId === req.user?.id;
+  if (!isAdmin && !isOwner && !isJobOwner) {
+    throw new AppError("Forbidden: insufficient permissions", 403);
+  }
+
   sendResponse(res, 200, "Application status retrieved successfully", {
     status: application.status,
   });

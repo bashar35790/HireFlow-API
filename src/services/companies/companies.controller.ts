@@ -5,7 +5,7 @@ import { sendResponse } from "../../utils/response";
 import * as companiesService from "./companies.service";
 
 export const getCompanies = asyncHandler(async (req: Request, res: Response) => {
-  const { data, meta } = await companiesService.listCompanies(req.query);
+  const { data, meta } = await companiesService.listCompanies(req.query, req.user);
   sendResponse(res, 200, "Companies retrieved successfully", data, meta);
 });
 

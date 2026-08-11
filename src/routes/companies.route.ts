@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { UserRole } from "../generated/prisma-client";
-import { authMiddleware } from "../middleware/auth.middleware";
+import { authMiddleware, optionalAuth } from "../middleware/auth.middleware";
 import { requireRole } from "../middleware/role.middleware";
 import { validate } from "../middleware/validate.middleware";
 import {
@@ -21,7 +21,7 @@ router.post(
   validate(createCompanySchema),
   createCompany
 );
-router.get("/", getCompanies);
+router.get("/", optionalAuth, getCompanies);
 router.get("/:id", getCompany);
 router.patch("/:id", authMiddleware, validate(updateCompanySchema), updateCompany);
 router.delete("/:id", authMiddleware, deleteCompany);

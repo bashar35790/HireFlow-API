@@ -1,13 +1,21 @@
+import { CompanyStatus, Prisma } from "../../generated/prisma-client";
 import prisma from "../../lib/prisma";
 import { AppError } from "../../middleware/error.middleware";
 import { buildMeta, parsePagination } from "../../utils/pagination";
 
-export const listCompanies = async (query: Record<string, unknown>) => {
+export const listCompanies = async (
+  query: Record<string, unknown>,
+  user?: { id: string; role: string }
+) => {
   const { page, limit, skip } = parsePagination(query);
-  const where: Record<string, unknown> = { isDeleted: false };
+  const where: Prisma.CompanyWhereInput = { isDeleted: false };
 
   if (query.status) {
-    where.status = query.status;
+    where.status = query.status as CompanyStatus;
+  } else if (!user) {
+    where.status = CompanyStatus.APPROVED;
+  } else if (user.role !== "ADMIN") {
+    where.OR = [{ status: CompanyStatus.APPROVED }, { ownerId: user.id }];
   }
 
   const [data, total] = await Promise.all([
