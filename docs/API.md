@@ -204,6 +204,13 @@ For errors (success = false), the format is:
 - **Access**: Public
 - **Response**: \`200 OK\`
 
+### List My Jobs
+- **Method**: `GET`
+- **Path**: `/jobs/mine`
+- **Query Parameters**: `companyId`
+- **Access**: `EMPLOYER` or `ADMIN` (employers see their own company's jobs; admins see all)
+- **Response**: `200 OK`
+
 ### Get Job by ID
 - **Method**: \`GET\`
 - **Path**: \`/jobs/:id\`
@@ -233,11 +240,24 @@ For errors (success = false), the format is:
 - **Request Body**: \`jobId\`, \`resume\`, \`coverLetter\`
 - **Response**: \`201 Created\`
 
+### List All Applications
+- **Method**: `GET`
+- **Path**: `/applications`
+- **Query Parameters**: `jobId`, `status`, `page`, `limit`
+- **Access**: `ADMIN` or `EMPLOYER` (employers only see applications for their own jobs)
+- **Response**: `200 OK`
+
 ### Get My Applications
-- **Method**: \`GET\`
-- **Path**: \`/applications/my\`
-- **Access**: \`JOB_SEEKER\`
-- **Response**: \`200 OK\`
+- **Method**: `GET`
+- **Path**: `/applications/my`
+- **Access**: `JOB_SEEKER`
+- **Response**: `200 OK`
+
+### Get Application Status
+- **Method**: `GET`
+- **Path**: `/applications/:id/status`
+- **Access**: Applicant or Owner (status of own application)
+- **Response**: `200 OK`
 
 ### Get Application by ID
 - **Method**: \`GET\`
